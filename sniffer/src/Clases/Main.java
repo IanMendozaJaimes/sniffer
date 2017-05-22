@@ -7,22 +7,33 @@
 package Clases;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author Ian
  */
 public class Main extends javax.swing.JFrame {
-
-    private Capturar captura;
     
+    private Paqueteria manejador;
+    private Sincronizador s;
+    private Capturar captura;
+    private DefaultTableModel modelo;
+    private ArrayList<InfoTrama> listaInfoTramas;
+    private int num_trama;
+
     public Main() throws IOException {
         initComponents();
-        captura = new Capturar(consola);
-        captura.obtenerDispositivos();
-        captura.imprimirDispositivos();
+        s = new Sincronizador();
+        captura = null;
+        modelo = (DefaultTableModel)tablaTramas.getModel();
+        listaInfoTramas = new ArrayList<>();
+        num_trama = 0;
     }
 
     /**
@@ -34,11 +45,12 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        listaTramas = new javax.swing.JList();
-        jTextField1 = new javax.swing.JTextField();
+        panel = new javax.swing.JScrollPane();
+        tablaTramas = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
         consola = new javax.swing.JTextArea();
+        capturar = new javax.swing.JButton();
+        detener = new javax.swing.JButton();
         menu = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -50,13 +62,41 @@ public class Main extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jScrollPane1.setViewportView(listaTramas);
+        tablaTramas.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
 
-        jTextField1.setText("jTextField1");
+            },
+            new String [] {
+                "Número", "Tiempo", "Origen", "Destino", "Protocolo", "Tamaño", "Información"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, true, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        panel.setViewportView(tablaTramas);
 
         consola.setColumns(20);
         consola.setRows(5);
         jScrollPane2.setViewportView(consola);
+
+        capturar.setText("Capturar");
+        capturar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                capturarActionPerformed(evt);
+            }
+        });
+
+        detener.setText("Detener");
+        detener.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detenerActionPerformed(evt);
+            }
+        });
 
         jMenu1.setText("Capturar");
 
@@ -69,9 +109,19 @@ public class Main extends javax.swing.JFrame {
         jMenu1.add(jMenuItem1);
 
         jMenuItem2.setText("Seleccionar archivo");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu1.add(jMenuItem2);
 
         jMenuItem3.setText("Guardar");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
         jMenu1.add(jMenuItem3);
 
         menu.add(jMenu1);
@@ -94,20 +144,24 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 525, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2))
+                        .addComponent(capturar, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(detener, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(capturar)
+                    .addComponent(detener))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(16, Short.MAX_VALUE))
@@ -118,11 +172,80 @@ public class Main extends javax.swing.JFrame {
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         //tramas al vuelo
+        try{
+            captura = new Capturar(consola);
+            captura.obtenerDispositivos();
+            captura.imprimirDispositivos();
+            captura.capturarTramas();
+        }
+        catch(Exception e){
+            System.out.println("Errores locos");
+        }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        //seleccionar archivo
+        try{
+            String nombreArchivo = "";
+            JFileChooser file = new JFileChooser();
+            int temp = file.showOpenDialog(this);
+            if(temp == JFileChooser.APPROVE_OPTION){
+                nombreArchivo = file.getSelectedFile().getName();
+            }
+            if(!nombreArchivo.equals("")){
+                captura = new Capturar(consola);
+                captura.obtenerDispositivos();
+                captura.imprimirDispositivos();
+                captura.capturarTramas(nombreArchivo);
+                imprimir("Se ha seleccionado el archivo: " + nombreArchivo);
+            }
+            else{
+                imprimir("Se ha cancelado la selección de archivo.");
+            }
+        }
+        catch(Exception e){
+            System.out.println("Errores locos");
+        }
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void capturarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_capturarActionPerformed
+        //iniciar captura de paquetes
+        s.contando = true;
+        manejador = new Paqueteria(500, s);
+        manejador.start();
+    }//GEN-LAST:event_capturarActionPerformed
+
+    private void detenerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detenerActionPerformed
+        //detener captura de paquetes
+        s.cambiar();
+    }//GEN-LAST:event_detenerActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        //guardar
+        try{
+            String nombreArchivo = "";
+            JFileChooser file = new JFileChooser();
+            int temp = file.showOpenDialog(this);
+            if(temp == JFileChooser.APPROVE_OPTION){
+                nombreArchivo = file.getSelectedFile().getName();
+            }
+            if(!nombreArchivo.equals("")){
+                captura.guardar(nombreArchivo, num_trama);
+                imprimir("Se ha seleccionado el archivo: " + nombreArchivo);
+            }
+            else{
+                imprimir("Se ha cancelado la selección de archivo.");
+            }
+        }
+        catch(Exception e){
+            System.out.println("Errores locos");
+        }
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    
+    public void imprimir(String texto){
+        consola.setText(consola.getText() + "\n" + texto);
+    }
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -158,9 +281,80 @@ public class Main extends javax.swing.JFrame {
             }
         });
     }
+    
+    class Paqueteria extends Thread{
+        private long conteo = 0;
+        private int tiempo = 0;
+        private Sincronizador sinc;
+        
+        public Paqueteria(int tiempo, Sincronizador sinc){
+            this.tiempo = tiempo;
+            this.sinc = sinc;
+        }
+        
+        @Override
+        public void run(){
+            if(captura == null){
+                imprimir("Seleccione una opción de captura para poder comenzar.");
+                return;
+            }
+            sinc.ocupado = true;
+            while(sinc.contando){
+                
+                InfoTrama temp;
+                String datos[] = new String[7];
+                temp = captura.manejadorPaquetes();
+                temp.setNumero(num_trama);
+                
+                try{
+                    datos[0] = String.valueOf(temp.getNumero());
+                    datos[1] = String.valueOf(new Date(temp.getPacket().getCaptureHeader().timestampInMillis()));
+                    datos[2] = "Falta";
+                    datos[3] = "Falta";
+                    datos[4] = "Falta";
+                    datos[5] = String.valueOf(temp.getPacket().getCaptureHeader().wirelen());
+                    datos[6] = "Falta";
+                }
+                catch(Exception e){
+                    return;
+                }
+                
+                listaInfoTramas.add(temp);
+                modelo.addRow(datos);
+                tablaTramas.setModel(modelo);
+                
+                num_trama++;
+                sinc.ocupado = false;
+                try {
+                    sleep(tiempo);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                sinc.ocupado = true;
+            }
+        }
+    }
+    
+    class Sincronizador{
+        boolean contando = true;
+        boolean ocupado = true;
+        
+        public synchronized void cambiar(){
+            while(ocupado == true){
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            contando = false;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton capturar;
     private javax.swing.JTextArea consola;
+    private javax.swing.JButton detener;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -168,10 +362,9 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JList listaTramas;
     private javax.swing.JMenuBar menu;
+    private javax.swing.JScrollPane panel;
+    private javax.swing.JTable tablaTramas;
     // End of variables declaration//GEN-END:variables
 }

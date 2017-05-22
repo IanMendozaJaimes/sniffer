@@ -1,12 +1,25 @@
 package Clases;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JTextArea;
+import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapAddr;
+import org.jnetpcap.PcapBpfProgram;
+import org.jnetpcap.PcapDumper;
+import org.jnetpcap.PcapHandler;
+import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
+import org.jnetpcap.nio.JBuffer;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 
 public class Capturar {
     private List<PcapIf> dispositivos;
@@ -37,23 +50,56 @@ public class Capturar {
             consola.setText(consola.getText() + "#" + i + ": " + dispositivo.getName() + "["+ descripcion +"] MAC:[" + dir_mac + "]\n");
             List<PcapAddr> direcciones = dispositivo.getAddresses();
             for(PcapAddr direccion:direcciones){
-                consola.setText(consola.getText() + direccion.getAddr().toString() + "\n");
+                imprimir(direccion.getAddr().toString() + "\n");
             }
             i++;
         }
     }
     
-    public void capturarTramas(){
+    //sin paramentros, es una captura al vuelo
+    public void capturarTramas() throws IOException{
         obtenerDispositivos();
+        imprimirDispositivos();
         
+        Configuracion conf = new Configuracion();
+        PcapIf dispositivo = dispositivos.get(conf.getNum_dispositivo());
+        
+        int snaplen = 64 * 1024;
+        int flags = Pcap.MODE_PROMISCUOUS;
+        int timeout = (int) (conf.getTiempo() * 1000);
+        
+        pcap = Pcap.openLive(dispositivo.getName(), snaplen, flags, timeout, err);
+        
+        if(pcap == null){
+            imprimir("Error al abrir el dispositivo para capturar" + err.toString());
+            return;
+        }
+        
+        filtro();
     }
     
+    //con parametro, es una captura de un archivo
     public void capturarTramas(String nomArchivo){
         pcap = Pcap.openOffline(nomArchivo, err);
         if(pcap == null){
             System.err.printf("Error al abrir el archivo a capturar: " + err.toString());
             return;
         }
+    }
+    
+    
+    private void filtro(){
+        PcapBpfProgram filtro = new PcapBpfProgram();
+        String expresion = ""; //puerto 80
+        int optimize = 0; //1 es true, 0 false
+        int netmask = 0;
+        int r2d2 = pcap.compile(filtro, expresion, optimize, netmask);
+        
+        if(r2d2 != Pcap.OK){
+            imprimir("Error: " + pcap.getErr());
+        }
+        
+        pcap.setFilter(filtro);
     }
     
     private static String asString(final byte[] mac){
@@ -68,5 +114,43 @@ public class Capturar {
             buf.append(Integer.toHexString((b < 0)? b + 256:b).toUpperCase());
         }
         return buf.toString();
+    }
+    
+    public void guardar(String nombreArchivo, int num_tramas){
+        PcapDumper dumper = pcap.dumpOpen(nombreArchivo);
+        pcap.loop(num_tramas, dumper);
+        dumper.close();
+        imprimir("Se guardo con exito el arhcivo: " + nombreArchivo + ", con un número de tramas de: " + num_tramas);
+    }
+    
+    public InfoTrama manejadorPaquetes(){
+        final InfoTrama info = new InfoTrama();
+        PcapPacketHandler<String> manejador = new PcapPacketHandler<String>(){
+            @Override
+            public void nextPacket(PcapPacket packet, String user) {
+                info.setPacket(packet);
+                info.setUser(user);
+                
+                System.out.printf("\n\nPaquete recibido el %s caplen=%-4d longitud=%-4d %s\n\n",
+				    new Date(packet.getCaptureHeader().timestampInMillis()),
+				    packet.getCaptureHeader().caplen(),  // Length actually captured
+				    packet.getCaptureHeader().wirelen(), // Original length
+				    user                                 // User supplied object
+				    );
+                /******Desencapsulado********/
+                for(int i=0;i<packet.size();i++){
+                System.out.printf("%02X ",packet.getUByte(i));
+                if(i%16==15)
+                    System.out.println("");
+                }
+                //System.out.println("\n\nEncabezado: "+ packet.toHexdump());
+            }
+        };
+        pcap.loop(1, manejador, " ");
+        return info;
+    }
+    
+    public void imprimir(String texto){
+        consola.setText(consola.getText() + "\n" + texto);
     }
 }
