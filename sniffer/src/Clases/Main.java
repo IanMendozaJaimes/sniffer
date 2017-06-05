@@ -15,10 +15,16 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 /**
  *
@@ -76,6 +82,7 @@ public class Main extends javax.swing.JFrame {
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
 
@@ -149,6 +156,15 @@ public class Main extends javax.swing.JFrame {
         menu.add(jMenu2);
 
         jMenu3.setText("Estadísticas");
+
+        jMenuItem5.setText("Graficar");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem5);
+
         menu.add(jMenu3);
 
         jMenu4.setText("Configuración");
@@ -282,6 +298,18 @@ public class Main extends javax.swing.JFrame {
             System.out.println("Error en el hilo: " + e.toString());
         }
     }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        // Graficar
+        
+//        if(listaInfoTramas.isEmpty()){
+//            consola.setText(consola.getText() + "\n No hay tramas que graficar.");
+//            return;
+//        }
+        
+        abrirGraficas grafica = new abrirGraficas(listaInfoTramas);
+        grafica.start();
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
     
     public void imprimir(String texto){
         consola.setText(consola.getText() + "\n" + texto);
@@ -346,6 +374,53 @@ public class Main extends javax.swing.JFrame {
             InfoVentana infoV = new InfoVentana(trama);
             infoV.setVisible(true);
             infoV.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        }
+    }
+    
+    class abrirGraficas extends Thread{
+        
+        private ArrayList<InfoTrama> lista;
+        
+        public abrirGraficas(ArrayList<InfoTrama> lista){
+            this.lista = lista;
+        }
+        
+        @Override
+        public void run(){
+            JFreeChart grafica;
+            DefaultCategoryDataset datos;
+            String tipos[] = {"ETHERNET", "IP", "TCP", "UDP", "ARP", "ICMP", "LLC"};
+            int contadores[];
+            
+            datos = new DefaultCategoryDataset();
+            contadores = new int[tipos.length];
+
+            for (int i = 0; i < contadores.length; i++) {
+                contadores[i] = 0;
+            }
+
+            for (int i = 0; i < lista.size(); i++) {
+                String t = lista.get(i).getTipoEscrito();
+                for (int j = 0; j < tipos.length; j++) {
+                    if(t.equals(tipos[j])){
+                        contadores[j] += 1;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < tipos.length; i++) {
+                datos.addValue(contadores[i], "Cantidad", tipos[i]);
+            }
+
+            grafica = ChartFactory.createBarChart("Cantidad de tramas de cada tipo capturadas", "Cantidad", "Tipo", datos, PlotOrientation.HORIZONTAL, false, true, false);
+            
+            ChartPanel panel = new ChartPanel(grafica);
+            JFrame ventana = new JFrame("Estadísticas");
+            ventana.getContentPane().add(panel);
+            ventana.pack();
+            ventana.setVisible(true);
+            ventana.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
     }
     
@@ -431,6 +506,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar menu;
     private javax.swing.JScrollPane panel;
