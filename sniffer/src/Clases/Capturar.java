@@ -61,11 +61,19 @@ public class Capturar {
         obtenerDispositivos();
         imprimirDispositivos();
         
+        int num_dispositivo = 0;
         Configuracion conf = new Configuracion();
-        PcapIf dispositivo = dispositivos.get(conf.getNum_dispositivo());
+        
+        num_dispositivo = getNumeroDispositivo(conf.getMAC());
+        if(num_dispositivo == -1){
+            imprimir("No hay una direccion mac válida, configurala por favor.");
+            return;
+        }
+        
+        PcapIf dispositivo = dispositivos.get(num_dispositivo);
         
         int snaplen = 64 * 1024;
-        int flags = Pcap.MODE_PROMISCUOUS;
+        int flags = conf.getPromiscuo();
         int timeout = (int) (conf.getTiempo() * 1000);
         
         pcap = Pcap.openLive(dispositivo.getName(), snaplen, flags, timeout, err);
@@ -76,6 +84,21 @@ public class Capturar {
         }
         
         filtro();
+    }
+    
+    public int getNumeroDispositivo(String mac) throws IOException{
+        int num = 0;
+        
+        for(PcapIf dispositivo:dispositivos){
+           byte[] macArreglo = dispositivo.getHardwareAddress();
+           String dir_mac = (macArreglo==null)?"No tiene dirección MAC":asString(macArreglo);
+           if(dir_mac.equals(mac)){
+               return num;
+           }
+           num++;
+        }
+        
+        return -1;
     }
     
     //con parametro, es una captura de un archivo
@@ -130,7 +153,7 @@ public class Capturar {
             public void nextPacket(PcapPacket packet, String user) {
                 info.setPacket(packet);
                 info.setUser(user);
-                
+
                 System.out.printf("\n\nPaquete recibido el %s caplen=%-4d longitud=%-4d %s\n\n",
 				    new Date(packet.getCaptureHeader().timestampInMillis()),
 				    packet.getCaptureHeader().caplen(),  // Length actually captured
@@ -144,6 +167,7 @@ public class Capturar {
                     System.out.println("");
                 }
                 //System.out.println("\n\nEncabezado: "+ packet.toHexdump());
+                info.analizarTrama();
             }
         };
         pcap.loop(1, manejador, " ");

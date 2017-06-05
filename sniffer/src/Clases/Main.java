@@ -6,12 +6,18 @@
 
 package Clases;
 
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -34,6 +40,18 @@ public class Main extends javax.swing.JFrame {
         modelo = (DefaultTableModel)tablaTramas.getModel();
         listaInfoTramas = new ArrayList<>();
         num_trama = 0;
+        tablaTramas.setModel(modelo);
+        tablaTramas.addMouseListener(new MouseAdapter(){
+            public void mousePressed(MouseEvent t){
+                JTable tabla = (JTable) t.getSource();
+                Point p = t.getPoint();
+                int row = tablaTramas.rowAtPoint(p);
+                if(t.getClickCount() == 2 && row != 1){
+                    abrirTrama tram = new abrirTrama(listaInfoTramas.get(row));
+                    tram.start();
+                }
+            }
+        });
     }
 
     /**
@@ -45,12 +63,12 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel = new javax.swing.JScrollPane();
-        tablaTramas = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
         consola = new javax.swing.JTextArea();
         capturar = new javax.swing.JButton();
         detener = new javax.swing.JButton();
+        panel = new javax.swing.JScrollPane();
+        tablaTramas = new javax.swing.JTable();
         menu = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -59,26 +77,9 @@ public class Main extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         jMenu4 = new javax.swing.JMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        tablaTramas.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Número", "Tiempo", "Origen", "Destino", "Protocolo", "Tamaño", "Información"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, true, true
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        panel.setViewportView(tablaTramas);
 
         consola.setColumns(20);
         consola.setRows(5);
@@ -97,6 +98,24 @@ public class Main extends javax.swing.JFrame {
                 detenerActionPerformed(evt);
             }
         });
+
+        tablaTramas.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "No.", "Tiempo", "Destino", "Origen", "Protocolo", "Longitud"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        panel.setViewportView(tablaTramas);
 
         jMenu1.setText("Capturar");
 
@@ -133,6 +152,15 @@ public class Main extends javax.swing.JFrame {
         menu.add(jMenu3);
 
         jMenu4.setText("Configuración");
+
+        jMenuItem4.setText("Parámetros");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jMenuItem4);
+
         menu.add(jMenu4);
 
         setJMenuBar(menu);
@@ -141,12 +169,12 @@ public class Main extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 789, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2)
-                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(capturar, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(detener, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -163,8 +191,8 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -241,6 +269,19 @@ public class Main extends javax.swing.JFrame {
             System.out.println("Errores locos");
         }
     }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        //abrir ventana de configuracion
+        captura = null;
+        abrirConf abrir = new abrirConf();
+        abrir.start();
+        try{
+            abrir.join();
+        }
+        catch(Exception e){
+            System.out.println("Error en el hilo: " + e.toString());
+        }
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
     
     public void imprimir(String texto){
         consola.setText(consola.getText() + "\n" + texto);
@@ -272,6 +313,7 @@ public class Main extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     new Main().setVisible(true);
@@ -280,6 +322,31 @@ public class Main extends javax.swing.JFrame {
                 }
             }
         });
+    }
+    
+    class abrirConf extends Thread{        
+        @Override
+        public void run(){
+            ConfiguracionVentana conf = new ConfiguracionVentana(consola);
+            conf.setVisible(true);
+            conf.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        }
+    }
+    
+    class abrirTrama extends Thread{
+        
+        private InfoTrama trama;
+        
+        public abrirTrama(InfoTrama inf){
+            this.trama = inf;
+        }
+        
+        @Override
+        public void run(){
+            InfoVentana infoV = new InfoVentana(trama);
+            infoV.setVisible(true);
+            infoV.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        }
     }
     
     class Paqueteria extends Thread{
@@ -302,20 +369,21 @@ public class Main extends javax.swing.JFrame {
             while(sinc.contando){
                 
                 InfoTrama temp;
-                String datos[] = new String[7];
+                String datos[] = new String[6];
                 temp = captura.manejadorPaquetes();
                 temp.setNumero(num_trama);
                 
                 try{
+                    if(temp.getTipoEscrito().equals("")){return;}
                     datos[0] = String.valueOf(temp.getNumero());
-                    datos[1] = String.valueOf(new Date(temp.getPacket().getCaptureHeader().timestampInMillis()));
-                    datos[2] = "Falta";
-                    datos[3] = "Falta";
-                    datos[4] = "Falta";
-                    datos[5] = String.valueOf(temp.getPacket().getCaptureHeader().wirelen());
-                    datos[6] = "Falta";
+                    datos[1] = temp.getTiempoEscrito();
+                    datos[2] = temp.getDestinoEscrito();
+                    datos[3] = temp.getOrigenEscrito();
+                    datos[4] = temp.getTipoEscrito();
+                    datos[5] = temp.getTamEscrito();
                 }
                 catch(Exception e){
+                    System.out.println("ERROR: " + e.toString());
                     return;
                 }
                 
@@ -362,6 +430,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar menu;
     private javax.swing.JScrollPane panel;
