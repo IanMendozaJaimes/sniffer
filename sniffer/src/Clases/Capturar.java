@@ -86,6 +86,35 @@ public class Capturar {
         filtro();
     }
     
+    public void capturarTramas(int bandera, String expr) throws IOException{
+        obtenerDispositivos();
+        imprimirDispositivos();
+        
+        int num_dispositivo = 0;
+        Configuracion conf = new Configuracion();
+        
+        num_dispositivo = getNumeroDispositivo(conf.getMAC());
+        if(num_dispositivo == -1){
+            imprimir("No hay una direccion mac válida, configurala por favor.");
+            return;
+        }
+        
+        PcapIf dispositivo = dispositivos.get(num_dispositivo);
+        
+        int snaplen = 64 * 1024;
+        int flags = conf.getPromiscuo();
+        int timeout = (int) (conf.getTiempo() * 1000);
+        
+        pcap = Pcap.openLive(dispositivo.getName(), snaplen, flags, timeout, err);
+        
+        if(pcap == null){
+            imprimir("Error al abrir el dispositivo para capturar" + err.toString());
+            return;
+        }
+        
+        filtro(expr);
+    }
+    
     public int getNumeroDispositivo(String mac) throws IOException{
         int num = 0;
         
@@ -114,6 +143,21 @@ public class Capturar {
     private void filtro(){
         PcapBpfProgram filtro = new PcapBpfProgram();
         String expresion = ""; //puerto 80
+        int optimize = 0; //1 es true, 0 false
+        int netmask = 0;
+        int r2d2 = pcap.compile(filtro, expresion, optimize, netmask);
+        
+        if(r2d2 != Pcap.OK){
+            imprimir("Error: " + pcap.getErr());
+        }
+        
+        pcap.setFilter(filtro);
+    }
+    
+    private void filtro(String expr){
+        imprimir(expr);
+        PcapBpfProgram filtro = new PcapBpfProgram();
+        String expresion = expr; //puerto 80
         int optimize = 0; //1 es true, 0 false
         int netmask = 0;
         int r2d2 = pcap.compile(filtro, expresion, optimize, netmask);

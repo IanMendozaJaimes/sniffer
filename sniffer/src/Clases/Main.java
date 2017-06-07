@@ -75,12 +75,16 @@ public class Main extends javax.swing.JFrame {
         detener = new javax.swing.JButton();
         panel = new javax.swing.JScrollPane();
         tablaTramas = new javax.swing.JTable();
+        txtFiltro = new javax.swing.JTextField();
         menu = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        tramasARP = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -134,6 +138,14 @@ public class Main extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
 
+        jMenuItem6.setText("Usar filtro");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem6);
+
         jMenuItem2.setText("Seleccionar archivo");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -153,6 +165,23 @@ public class Main extends javax.swing.JFrame {
         menu.add(jMenu1);
 
         jMenu2.setText("Generar");
+
+        tramasARP.setText("Tramas ARP");
+        tramasARP.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tramasARPActionPerformed(evt);
+            }
+        });
+        jMenu2.add(tramasARP);
+
+        jMenuItem7.setText("Tramas ICMP");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem7);
+
         menu.add(jMenu2);
 
         jMenu3.setText("Estadísticas");
@@ -194,16 +223,19 @@ public class Main extends javax.swing.JFrame {
                         .addComponent(capturar, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(detener, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(txtFiltro)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(capturar)
-                    .addComponent(detener))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtFiltro)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(capturar)
+                        .addComponent(detener)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panel, javax.swing.GroupLayout.PREFERRED_SIZE, 321, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -255,7 +287,7 @@ public class Main extends javax.swing.JFrame {
     private void capturarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_capturarActionPerformed
         //iniciar captura de paquetes
         s.contando = true;
-        manejador = new Paqueteria(500, s);
+        manejador = new Paqueteria(100, s);
         manejador.start();
     }//GEN-LAST:event_capturarActionPerformed
 
@@ -302,14 +334,39 @@ public class Main extends javax.swing.JFrame {
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
         // Graficar
         
-//        if(listaInfoTramas.isEmpty()){
-//            consola.setText(consola.getText() + "\n No hay tramas que graficar.");
-//            return;
-//        }
+        if(listaInfoTramas.isEmpty()){
+            consola.setText(consola.getText() + "\n No hay tramas que graficar.");
+            return;
+        }
         
         abrirGraficas grafica = new abrirGraficas(listaInfoTramas);
         grafica.start();
     }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        // Usar filtro para capturar
+        try{
+            captura = new Capturar(consola);
+            captura.obtenerDispositivos();
+            captura.imprimirDispositivos();
+            captura.capturarTramas(1, txtFiltro.getText());
+        }
+        catch(Exception e){
+            System.out.println("Errores locos");
+        }
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void tramasARPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tramasARPActionPerformed
+        // Abrir menu de generacion de tramas ARP
+        abrirGenerarARP arp = new abrirGenerarARP();
+        arp.start();
+        
+    }//GEN-LAST:event_tramasARPActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        // Abrir menu de generacion de tramas ICMP
+        
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
     
     public void imprimir(String texto){
         consola.setText(consola.getText() + "\n" + texto);
@@ -358,6 +415,16 @@ public class Main extends javax.swing.JFrame {
             ConfiguracionVentana conf = new ConfiguracionVentana(consola);
             conf.setVisible(true);
             conf.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        }
+    }
+    
+    
+    class abrirGenerarARP extends Thread{
+        @Override
+        public void run(){
+            ArpVentana arpV = new ArpVentana(consola);
+            arpV.setVisible(true);
+            arpV.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         }
     }
     
@@ -507,9 +574,13 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuBar menu;
     private javax.swing.JScrollPane panel;
     private javax.swing.JTable tablaTramas;
+    private javax.swing.JMenuItem tramasARP;
+    private javax.swing.JTextField txtFiltro;
     // End of variables declaration//GEN-END:variables
 }
