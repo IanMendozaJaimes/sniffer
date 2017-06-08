@@ -21,11 +21,14 @@ public class Generar {
     private String interfaz;
     private PcapIf disp;
     
-    public Generar(JTextArea con, String interfaz){
+    public Generar(JTextArea con){
         dispositivos = new ArrayList<PcapIf>();
         err = new StringBuilder();
         pcap = null;
         consola = con;
+    }
+
+    public void setInterfaz(String interfaz) {
         this.interfaz = interfaz;
     }
     
@@ -167,7 +170,7 @@ public class Generar {
         }
         
         //tipo
-        trama[12] = (byte) 0x80;
+        trama[12] = (byte) 0x08;
         trama[13] = (byte) 0x00;
                 
         //==============EMPEZAMOS CON IP===============//

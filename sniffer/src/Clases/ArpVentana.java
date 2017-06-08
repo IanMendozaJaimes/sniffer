@@ -142,8 +142,6 @@ public class ArpVentana extends javax.swing.JFrame {
         macOrigen = txtMacOrigen.getText();
         ipDestino = txtIpDestino.getText();
         
-        System.out.println(ipDestino);
-        
         Arp arp = new Arp(numT, macOrigen, ipDestino, s);
         arp.start();
         
@@ -174,7 +172,8 @@ public class ArpVentana extends javax.swing.JFrame {
         
         @Override
         public void run(){
-            Generar genera = new Generar(consola, macOrigen);
+            Generar genera = new Generar(consola);
+            genera.setInterfaz(macOrigen);
             generar.setEnabled(false);
             parar.setEnabled(true);
             try {

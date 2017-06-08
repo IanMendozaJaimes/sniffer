@@ -58,6 +58,8 @@ public class Main extends javax.swing.JFrame {
                 }
             }
         });
+        capturar.setEnabled(true);
+        detener.setEnabled(false);
     }
 
     /**
@@ -287,13 +289,16 @@ public class Main extends javax.swing.JFrame {
     private void capturarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_capturarActionPerformed
         //iniciar captura de paquetes
         s.contando = true;
+        capturar.setEnabled(false);
+        detener.setEnabled(true);
         manejador = new Paqueteria(100, s);
         manejador.start();
     }//GEN-LAST:event_capturarActionPerformed
 
     private void detenerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detenerActionPerformed
         //detener captura de paquetes
-        s.cambiar();
+        Detener d = new Detener(s);
+        d.start();
     }//GEN-LAST:event_detenerActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -359,13 +364,13 @@ public class Main extends javax.swing.JFrame {
     private void tramasARPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tramasARPActionPerformed
         // Abrir menu de generacion de tramas ARP
         abrirGenerarARP arp = new abrirGenerarARP();
-        arp.start();
-        
+        arp.start();        
     }//GEN-LAST:event_tramasARPActionPerformed
 
     private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         // Abrir menu de generacion de tramas ICMP
-        
+        abrirGenerarICMP icmp = new abrirGenerarICMP();
+        icmp.start();
     }//GEN-LAST:event_jMenuItem7ActionPerformed
     
     public void imprimir(String texto){
@@ -418,6 +423,14 @@ public class Main extends javax.swing.JFrame {
         }
     }
     
+    class abrirGenerarICMP extends Thread{
+        @Override
+        public void run(){
+            IcmpVentana icmpV = new IcmpVentana(consola);
+            icmpV.setVisible(true);
+            icmpV.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        }
+    }
     
     class abrirGenerarARP extends Thread{
         @Override
@@ -505,9 +518,13 @@ public class Main extends javax.swing.JFrame {
         public void run(){
             if(captura == null){
                 imprimir("Seleccione una opción de captura para poder comenzar.");
+                capturar.setEnabled(true);
+                detener.setEnabled(false);
                 return;
             }
             sinc.ocupado = true;
+            capturar.setEnabled(false);
+            detener.setEnabled(true);
             while(sinc.contando){
                 
                 InfoTrama temp;
@@ -526,6 +543,8 @@ public class Main extends javax.swing.JFrame {
                 }
                 catch(Exception e){
                     System.out.println("ERROR: " + e.toString());
+                    capturar.setEnabled(true);
+                    detener.setEnabled(false);
                     return;
                 }
                 
@@ -545,6 +564,19 @@ public class Main extends javax.swing.JFrame {
         }
     }
     
+    class Detener extends Thread{
+        private Sincronizador sinc;
+        
+        public Detener(Sincronizador sinc){
+            this.sinc = sinc;
+        }
+        
+        @Override
+        public void run(){
+            sinc.cambiar();
+        }
+    }
+    
     class Sincronizador{
         boolean contando = true;
         boolean ocupado = true;
@@ -558,6 +590,8 @@ public class Main extends javax.swing.JFrame {
                 }
             }
             contando = false;
+            capturar.setEnabled(true);
+            detener.setEnabled(false);
         }
     }
 

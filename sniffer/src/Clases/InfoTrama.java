@@ -173,7 +173,17 @@ public class InfoTrama {
                     analisisEscrito += "\n\tChecksum: " + udp.checksum() + " " + udp.checksumDescription();
                 }
                 else{
-                    tipoEscrito = "IP";
+                    Icmp icmp = new Icmp();
+                    if(packet.hasHeader(icmp)){
+                        tipoEscrito = "ICMP";
+                        analisisEscrito += "INTERNET CONTROL MESSAGE PROTOCOL";
+                        analisisEscrito += "\n\tTipo: " + icmp.type() + " " + icmp.typeDescription();
+                        analisisEscrito += "\n\tCódigo: " + icmp.code();
+                        analisisEscrito += "\n\tChecksum: " + icmp.checksum() + " " + icmp.checksumDescription();
+                    }
+                    else{
+                        tipoEscrito = "IP";
+                    }
                 }
             }
         }
@@ -191,16 +201,6 @@ public class InfoTrama {
                 analisisEscrito += "\n\tIP del Remitente: " + getIP(arp.spa());
                 analisisEscrito += "\n\tMAC del Destinatario: " + asString(arp.tha());
                 analisisEscrito += "\n\tIP del Destinatario: " + getIP(arp.tpa());
-            }
-            else{
-                Icmp icmp = new Icmp();
-                if(packet.hasHeader(icmp)){
-                    tipoEscrito = "ICMP";
-                    analisisEscrito += "INTERNET CONTROL MESSAGE PROTOCOL";
-                    analisisEscrito += "\n\tTipo: " + icmp.type() + " " + icmp.typeDescription();
-                    analisisEscrito += "\n\tCódigo: " + icmp.code();
-                    analisisEscrito += "\n\tChecksum: " + icmp.checksum() + " " + icmp.checksumDescription();
-                }
             }
         }
     }
